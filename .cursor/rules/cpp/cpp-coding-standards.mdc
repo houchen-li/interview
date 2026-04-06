@@ -1,0 +1,66 @@
+---
+globs: *.cpp,*.hpp
+description: "C++23 coding standards for Kosy: Microsoft/clang-format style, naming, trailing returns, and modern C++ usage."
+---
+# C++ Coding Standards (Kosy)
+
+## 1. Baseline
+
+- **Standard**: C++23; GNU extensions may be used when enabled by CMake and supported by the toolchain.
+- **Formatting**: **clang-format** with the repository **Microsoft** base style (see `.clang-format`). Do not hand-format against a different style.
+- **Errors**: Prefer **exceptions** for exceptional control flow; do not introduce `Status`-style monadic error types unless the codebase already uses them in that module.
+
+## 2. Naming
+
+- **Functions**: `camelCase` (e.g., `computeAnswer`, `normalizeVector`).
+- **Types**: `PascalCase` (e.g., `MatrixView`, `ProblemSet`).
+- **Variables**: `camelCase` for locals and parameters.
+- **Private members**: `m_` prefix (e.g., `m_data`, `m_rowCount`).
+- **Namespaces**: lowercase, short and stable (e.g., `kosy::math`); avoid excessive nesting.
+
+## 3. Trailing Return Types
+
+**REQUIRED** for all non-void free functions, member functions, and lambdas where the language allows a declarator:
+
+```cpp
+auto add(int a, int b) -> int;
+
+auto Matrix::trace() const -> double;
+```
+
+Use `auto` with trailing return for complex or dependent return types to improve readability.
+
+## 4. Class Design
+
+- **Rule of five/zero**: follow value semantics; default or delete special members explicitly when non-trivial.
+- **Explicit constructors** for single-argument constructors unless intentional implicit conversion is required.
+- **Const correctness**: mark methods `const` when they do not mutate observable state.
+- Avoid `friend` unless necessary for performance or API boundaries.
+
+## 5. Attributes and Portability
+
+- Use standard attributes (`[[nodiscard]]`, `[[maybe_unused]]`, `[[likely]]`/`[[unlikely]]` when supported) to document intent.
+- GNU-specific attributes are acceptable when guarded by project/toolchain expectations; prefer portable equivalents when cost is low.
+
+## 6. Modern C++
+
+- Prefer `std::optional`, `std::variant`, `std::span`, and ranges where they clarify APIs.
+- Use `enum class` over unscoped enums.
+- Avoid raw owning pointers; prefer smart pointers or containers.
+- Use `nullptr`, not `NULL`.
+
+## 7. Comments
+
+- Doxygen file headers: see [basic/copyright.mdc](mdc:.cursor/rules/basic/copyright.mdc).
+- Document public APIs with brief Doxygen where behavior is non-obvious (`@brief`, `@param`, `@returns`, `@throws`).
+- Line comments explain **why**, not **what**, unless the algorithm is subtle.
+
+## 8. Includes and Modules
+
+- Prefer consistent include order: corresponding header first, then project headers, then third party, then standard library.
+- For C++ modules (`kosy_cxx_module`), follow existing `FILE_SET CXX_MODULES` layout and module partition boundaries.
+
+## 9. Performance Notes
+
+- Prefer `reserve` when size is known for repeated `vector` growth.
+- Hot loops: consider OpenMP or algorithmic changes; measure before micro-optimizing.

@@ -1,0 +1,37 @@
+---
+alwaysApply: true
+description: "Copyright and file header requirements for Kosy source files."
+---
+# Copyright Headers
+
+## C++ (`.hpp`, `.cpp`, and other C++ sources)
+
+Use a **Doxygen** file comment at the top of every translation unit and header that ships with the project. Adapt `@file` and `@brief` to the file; keep `@copyright` and `@license` consistent with project policy.
+
+```cpp
+/*!
+ * @file example.hpp
+ * @brief One-line summary of the file.
+ * @author Kosy Development Team
+ * @copyright Copyright (c) 2026 Kosy Development Team
+ * @license MIT
+ */
+```
+
+- Use the **current calendar year** in `@copyright` for new files.
+- Place the block **before** include guards or module declarations if both apply; follow existing file patterns in the repo.
+
+## Python (`.py`, `.pyi`)
+
+First lines:
+
+```python
+# Copyright (c) 2026 Kosy Development Team. All rights reserved.
+```
+
+Use the **current year** for new files.
+
+## Exemptions
+
+- **CMake** files (`CMakeLists.txt`, `*.cmake`): no copyright header required.
+- **Cursor rule files** (`.mdc`): YAML frontmatter must stay at line 1 where required; do **not** add a copyright block to `.mdc` files.

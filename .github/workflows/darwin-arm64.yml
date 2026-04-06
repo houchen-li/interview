@@ -1,0 +1,91 @@
+name: darwin-arm64
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+permissions:
+  actions: write
+
+jobs:
+  darwin-arm64:
+    strategy:
+      fail-fast: false
+      matrix:
+        cmake_preset: [darwin-gcc-arm64, darwin-clang-arm64]
+        build_type: [Release]
+        build_shared: [ON, OFF]
+
+    runs-on: macos-15
+    name: ${{ matrix.cmake_preset }}.${{ matrix.build_type }}.build-shared-${{ matrix.build_shared }}
+    env:
+      GCC_VERSION: "15"
+      CLANG_VERSION: "22"
+
+    steps:
+      - name: Checkout repository
+        id: checkout-repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Install gcc prerequisites on macOS
+        id: install-prerequisites-darwin-gcc
+        if: matrix.cmake_preset == 'darwin-gcc-arm64'
+        run: |
+          ln -sf $(brew --prefix)/bin/gcc-${{ env.GCC_VERSION }} $(brew --prefix)/bin/gcc
+          ln -sf $(brew --prefix)/bin/g++-${{ env.GCC_VERSION }} $(brew --prefix)/bin/g++
+        shell: bash
+
+      - name: Install clang prerequisites on macOS
+        id: install-prerequisites-darwin-clang
+        if: matrix.cmake_preset == 'darwin-clang-arm64'
+        run: |
+          brew install llvm@${{ env.CLANG_VERSION }} libomp
+          _HOMEBREW_LLVM_PREFIX=$(brew --prefix llvm@${{ env.CLANG_VERSION }})
+          _HOMEBREW_LIBOMP_PREFIX=$(brew --prefix libomp)
+          echo "${_HOMEBREW_LLVM_PREFIX}/bin" >> $GITHUB_PATH
+          echo "CMAKE_PREFIX_PATH=${_HOMEBREW_LLVM_PREFIX}:${_HOMEBREW_LIBOMP_PREFIX}" >> $GITHUB_ENV
+          echo "SDKROOT=$(xcrun --show-sdk-path)" >> $GITHUB_ENV
+          unset _HOMEBREW_LLVM_PREFIX
+          unset _HOMEBREW_LIBOMP_PREFIX
+        shell: bash
+
+      - name: Setup vcpkg
+        id: setup-vcpkg
+        uses: lukka/run-vcpkg@v11
+
+      - name: Install latest CMake and Ninja
+        id: install-cmake
+        uses: lukka/get-cmake@latest
+
+      - name: Setup ccache
+        id: setup-ccache
+        uses: Chocobo1/setup-ccache-action@v1
+        with:
+          store_cache: false
+          restore_cache: false
+          remove_stale_cache: true
+          override_cache_key: ccache_${{ matrix.cmake_preset }}_${{ matrix.build_type }}_build-shared-${{ matrix.build_shared }}
+
+      - name: Install uv
+        id: install-uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Setup Python virtual environment
+        id: setup-python-venv
+        run: uv sync
+        shell: bash
+
+      - name: Run CMake consuming CMakePresets.json for ${{ matrix.cmake_preset }} ${{ matrix.build_type }}
+        id: run-cmake
+        uses: lukka/run-cmake@v10
+        with:
+          configurePreset: ${{ matrix.cmake_preset }}
+          configurePresetAdditionalArgs: "['-DCMAKE_BUILD_TYPE=${{ matrix.build_type }}', '-DBUILD_SHARED_LIBS=${{ matrix.build_shared }}']"
+          buildPreset: ${{ matrix.cmake_preset }}
+          buildPresetAdditionalArgs: "[]"
+          testPreset: ${{ matrix.cmake_preset }}
+          testPresetAdditionalArgs: "[]"

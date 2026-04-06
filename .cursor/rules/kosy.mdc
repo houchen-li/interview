@@ -1,0 +1,76 @@
+---
+alwaysApply: true
+description: "Project context, toolchain, and conventions for the Kosy C++23/Python repository."
+---
+# Kosy — Project Context
+
+## Overview
+
+Kosy is a **C++23** and **Python 3.14+** codebase for math-focused interview problems and experiments. The license is **MIT**. C++/Python interop uses **nanobind**. Builds are **CMake**-based (not single-config Make); **Ninja** is the expected generator via **CMake Presets**.
+
+## Technical Requirements
+
+| Area | Requirement |
+| ---- | ----------- |
+| C++ standard | C++23; GNU extensions may be enabled (`CMAKE_CXX_EXTENSIONS`) |
+| Python | 3.14+; managed with **uv** |
+| Build | CMake ≥ 3.31, Ninja |
+| C++ formatting | clang-format 22+ (Microsoft base style) |
+| Python formatting / lint | ruff, pyright |
+| C++ tests | doctest |
+| Python tests | pytest |
+
+## C++ Dependencies (typical)
+
+| Package | Role |
+| ------- | ---- |
+| doctest | Unit testing |
+| spdlog | Logging |
+| cxxopts | CLI parsing |
+| Matplot++ | Plotting |
+| nanobind | Python bindings |
+| OpenMP | Parallelism (where used) |
+
+Declared and pinned via **CPM** in `cmake/third_party` (see project CMake).
+
+## Python Dependencies (typical)
+
+Core stacks include **NumPy**, **SciPy**, **Matplotlib**, **Numba**, **Cython**, **nanobind**, **PyQt6**, **Loguru**, plus dev tools in `pyproject.toml` (ruff, pyright, pytest). Lock with **uv**.
+
+## Build Commands
+
+| Step | Command |
+| ---- | ------- |
+| Configure | `cmake --preset <preset>` |
+| Build | `cmake --build out/build/<preset>` |
+| Test (CTest) | `ctest --test-dir out/build/<preset>` |
+| Python env | `uv sync` |
+| Python tests | `uv run pytest` |
+
+Presets: `linux-gcc-x64`, `linux-clang-x64`, `darwin-gcc-arm64`, `darwin-clang-arm64`, `windows-msvc-x64`.
+
+## CMake Cache Options (selected)
+
+| Variable | Meaning |
+| -------- | ------- |
+| `KOSY_BUILD_TESTING` | Enable Kosy/CTest testing targets |
+| `KOSY_ENABLE_INSTALL` | Emit install rules and versioned output names |
+| `BUILD_TESTING` | Standard CTest master switch |
+| `CMAKE_UNITY_BUILD` | Unity builds |
+| `BUILD_SHARED_LIBS` | Shared vs static |
+| `CMAKE_EXPORT_COMPILE_COMMANDS` | `compile_commands.json` for IDEs |
+| `KOSY_SOVERSION` | SOVERSION for shared installs |
+
+## CMake Helpers
+
+Defined in `cmake/utils.cmake`:
+
+- **`kosy_cxx_library`**: `NAME`, `SRCS`, `HDRS`, `DEPS`, `COPTS`, `DEFINES`, `LINKOPTS`; flags `PUBLIC`, `TESTONLY`, `DISABLE_INSTALL`.
+- **`kosy_cxx_module`**: C++ modules via `IXXS` and related target properties.
+- **`kosy_cxx_test`**: Test executable with doctest/cxxopts/Matplot++ and `add_test`.
+
+## Coding Standards — Pointers
+
+- C++: [cpp/cpp-coding-standards.mdc](mdc:.cursor/rules/cpp/cpp-coding-standards.mdc), [cpp/cpp-testing-guidelines.mdc](mdc:.cursor/rules/cpp/cpp-testing-guidelines.mdc)
+- CMake: [cmake/cmake-coding-standards.mdc](mdc:.cursor/rules/cmake/cmake-coding-standards.mdc)
+- Python: [python/python-coding-standards.mdc](mdc:.cursor/rules/python/python-coding-standards.mdc), [python/python-testing-guidelines.mdc](mdc:.cursor/rules/python/python-testing-guidelines.mdc), [python/python-dependencies.mdc](mdc:.cursor/rules/python/python-dependencies.mdc)
