@@ -1,0 +1,89 @@
+---
+globs: "*_test.py,*test_*.py"
+description: "pytest testing guidelines for Kosy Python code."
+---
+# Python Testing Guidelines
+
+## 1. Core Principles
+
+### Test Framework
+
+Use **pytest** exclusively for Python tests.
+
+### Philosophy
+
+- Tests are **independent** and **repeatable** (no order dependency).
+- Prefer clear **Arrange / Act / Assert** structure.
+- Test code quality matches production code (typing, structure, naming).
+
+## 2. Naming
+
+### Files
+
+- Prefer `{module}_test.py` colocated with or mirroring `{module}.py`, or `test_*.py` under `tests/` if that is the project convention—**follow existing layout**.
+
+### Functions
+
+```python
+def test_compute_norm_rejects_non_finite_values() -> None:
+    ...
+```
+
+- **Do not** add docstrings to tests unless the scenario cannot be expressed in the name.
+
+### Classes
+
+```python
+class TestProblemSolver:
+    def test_solves_linear_system(self) -> None:
+        ...
+```
+
+## 3. Tools
+
+| Concern | Tool |
+| ------- | ---- |
+| Runner | pytest |
+| Mocking | `unittest.mock` |
+| Async | pytest-asyncio (if used in project) |
+
+Run via **`uv run pytest`** so the environment matches `pyproject.toml`.
+
+## 4. Fixtures (`conftest.py`)
+
+```python
+import pytest
+
+@pytest.fixture
+def small_matrix() -> list[list[float]]:
+    return [[1.0, 0.0], [0.0, 1.0]]
+```
+
+Use appropriate **scope** (`function`, `class`, `module`, `session`) to balance speed and isolation.
+
+## 5. Parametrization
+
+```python
+@pytest.mark.parametrize("n,expected", [(0, 1), (1, 1), (5, 120)])
+def test_factorial(n: int, expected: int) -> None:
+    assert factorial(n) == expected
+```
+
+## 6. Exceptions
+
+```python
+import pytest
+
+def test_parse_raises_on_invalid_input() -> None:
+    with pytest.raises(ValueError, match="invalid"):
+        parse("")
+```
+
+## 7. CMake / C++ Integration
+
+Python tests are **not** registered through CMake `add_test` unless the project adds explicit glue; use **uv** + **pytest** as the source of truth for Python verification.
+
+## 8. Mocks
+
+- Mock **external** I/O and time; do not mock the unit under test.
+- Prefer explicit dependency injection over patching when feasible.

@@ -1,0 +1,57 @@
+---
+alwaysApply: true
+description: "Development workflow for Kosy: implement, test, format, lint, and dependency management."
+---
+# Development Workflow
+
+## 1. Standard Loop
+
+Execute in order for most changes:
+
+1. **Implement** the feature or fix in the appropriate language and directory (`src/`, `tests/`, Python modules as established in-repo).
+2. **Test**: add or update tests first when fixing bugs (see TDD skill if used); run C++ and Python tests relevant to your edit.
+3. **Format**: C++ with `clang-format -i` on touched files; Python with `ruff format` (and `ruff check --fix` as needed).
+4. **Lint**: `clang-tidy` for C++ where configured; `ruff` + `pyright` for Python.
+5. **Done** when tests pass and linters are clean for touched code.
+
+## 2. C++ Build and Test
+
+Typical flow after cloning:
+
+```bash
+cmake --preset linux-clang-x64
+cmake --build out/build/linux-clang-x64
+ctest --test-dir out/build/linux-clang-x64
+```
+
+Enable tests at configure time if the project gates them:
+
+```bash
+cmake --preset linux-clang-x64 -DKOSY_BUILD_TESTING=ON -DBUILD_TESTING=ON
+```
+
+Use the preset that matches your OS/arch (`linux-gcc-x64`, `darwin-clang-arm64`, `windows-msvc-x64`, etc.).
+
+## 3. Python
+
+```bash
+uv sync
+uv run pytest
+```
+
+Use `uv run` so the project-managed interpreter and dependencies are picked up.
+
+## 4. Dependencies
+
+- **C++**: Add or bump dependencies through **CPM** / CMake under `cmake/third_party` following existing patterns; keep `CPM_SOURCE_CACHE` (`third_party`) consistent with team practice.
+- **Python**: Edit `pyproject.toml`, then `uv lock` / `uv sync` as appropriate; commit `uv.lock` when the team expects reproducible installs.
+
+## 5. Performance
+
+- Prefer measured changes: profile hot paths before micro-optimizing.
+- Use **OpenMP** or algorithmic improvements only where profiling shows benefit; keep parallelism correctness in mind.
+
+## 6. Documentation Policy
+
+- Do **not** create new Markdown guides, READMEs, or doc sites unless explicitly requested.
+- Prefer clear naming, concise comments (English), and tests over extra prose files.

@@ -1,0 +1,73 @@
+---
+globs: *.py,*.pyi
+description: "Python coding standards for Kosy: PEP 8, type hints, ruff, pyright, and organization."
+---
+# Python Coding Standards
+
+## 1. Code Organization
+
+- Prefer **explicit imports** from concrete modules; avoid star-imports except in rare re-export barrels approved by the team.
+- Group related modules by concern (e.g., `models/`, `bindings/`, `utils/`) following existing repository layout.
+- Extract reusable helpers into small modules (`*_utils.py`) when duplication appears.
+
+## 2. Function Documentation
+
+- **Do not** add docstrings when names and type hints already convey behavior.
+- Add docstrings when behavior is non-obvious, invariants are subtle, or errors/side effects need documenting.
+
+## 3. Code Style
+
+- Follow **PEP 8** and project **ruff** configuration in `pyproject.toml`.
+- Use **type hints** on all public functions and methods; prefer modern syntax (`list[str]`, `dict[str, int]`, `X | None`).
+- Run **pyright** for static typing in CI and locally when editing Python.
+
+### Imports
+
+Order: standard library → third party → local. Separate groups with one blank line.
+
+```python
+import os
+from pathlib import Path
+
+import numpy as np
+
+from kosy.example import helper
+```
+
+### Dependencies
+
+- When adding imports, update **`pyproject.toml`** dependencies and refresh **`uv.lock`** with **uv** as appropriate.
+- Do not rely on unspecified transitive packages for direct imports.
+
+## 4. Error Handling
+
+- Raise specific built-in or domain exceptions; avoid bare `except:`.
+- Chain exceptions with `raise ... from err` when re-wrapping.
+- Use logging (e.g., **loguru** where the project standardizes) for diagnostic context, not `print`, in library code.
+
+## 5. Naming Conventions
+
+- Functions and variables: `snake_case`
+- Classes: `PascalCase`
+- Constants: `UPPER_SNAKE_CASE`
+- Private attributes: `_leading_underscore`
+- Modules: short, lowercase, no underscores unless needed for clarity
+
+## 6. Comments
+
+- English only.
+- Explain **why**, not **what**, unless the algorithm is dense or non-obvious.
+
+## 7. Anti-patterns
+
+- Mutable default arguments (`def f(x=[])`) — use `None` and initialize inside.
+- Global mutable singletons — prefer explicit dependency injection or factories for testability.
+- Tuple-heavy APIs for structured data — prefer `@dataclass` or `NamedTuple` for clarity.
+
+## 8. Checklist (before commit)
+
+- [ ] Type hints on public APIs
+- [ ] ruff clean on touched files
+- [ ] pyright clean on touched modules (if enabled)
+- [ ] Tests updated or added (`pytest`)
+- [ ] No secrets or machine-specific paths in code

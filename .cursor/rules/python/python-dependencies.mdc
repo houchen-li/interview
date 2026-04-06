@@ -1,0 +1,39 @@
+---
+globs: pyproject.toml,uv.lock
+description: "Managing Python dependencies with uv and pyproject.toml in Kosy."
+---
+# Python Dependencies (uv)
+
+## 1. Source of Truth
+
+- **`pyproject.toml`**: project metadata, dependency version constraints, and tool configuration (ruff, pyright, pytest, etc.).
+- **`uv.lock`**: reproducible resolution for the team and CI; commit lockfile changes when dependencies change intentionally.
+
+## 2. Workflow
+
+| Task | Command |
+| ---- | ------- |
+| Install from lock | `uv sync` |
+| Add runtime dependency | `uv add <package>` |
+| Add dev dependency | `uv add --dev <package>` |
+| Update lock after manual edits | `uv lock` |
+
+Always use **`uv run`** for tools (`pytest`, `ruff`, `pyright`) in documentation and CI scripts unless the environment is already activated.
+
+## 3. Version Pins
+
+- Prefer compatible release specifiers (`^`, `>=` with upper bounds) consistent with team policy in `pyproject.toml`.
+- Avoid unconstrained `*` versions for libraries that affect reproducibility.
+
+## 4. Platform Notes
+
+- If optional deps differ by OS (e.g., GUI stacks), use environment markers in `pyproject.toml` (`sys_platform`, etc.).
+
+## 5. C++ Interop
+
+- **nanobind** and related build tooling must stay aligned between CMake and Python; when bumping nanobind, verify extension modules still build.
+
+## 6. Hygiene
+
+- Remove unused dependencies when imports disappear.
+- Do not commit virtual environments; rely on `.venv` or CI caches as defined by project `.gitignore`.

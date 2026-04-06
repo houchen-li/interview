@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "kosy",
+  "version-string": "0.1.0",
+  "description": "A Collection of Interesting Math Problems for Interview Preparation.",
+  "homepage": "https://github.com/houchen-li/kosy",
+  "license": "MIT",
+  "builtin-baseline": "66c0373dc7fca549e5803087b9487edfe3aca0a1",
+  "dependencies": []
+}

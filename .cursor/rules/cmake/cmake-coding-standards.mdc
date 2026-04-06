@@ -1,0 +1,78 @@
+---
+globs: "CMakeLists.txt,*.cmake"
+description: "CMake conventions for Kosy: presets, CPM, and kosy_cxx_* helpers."
+---
+# CMake Coding Standards
+
+## 1. Layout
+
+- Root `CMakeLists.txt` sets language standards, global options, and pulls in `cmake/utils.cmake`.
+- Feature and library logic lives under `src/` and `tests/` with localized `CMakeLists.txt` files.
+- Toolchains live in `cmake/toolchains/`; presets are defined in `CMakePresets.json`.
+
+## 2. Dependency Management (CPM)
+
+- Third-party code is fetched via **CPM** from `cmake/third_party` (or equivalent project files).
+- Pin versions in one place; avoid ad-hoc `FetchContent` calls scattered across targets unless justified.
+- Respect `CPM_SOURCE_CACHE` (`third_party/`) for offline-friendly and CI-cached builds.
+
+## 3. `kosy_cxx_library`
+
+Use for most libraries:
+
+```cmake
+kosy_cxx_library(
+  NAME mylib
+  HDRS mylib.hpp
+  SRCS mylib.cpp
+  DEPS Some::ImportedTarget
+  PUBLIC
+)
+```
+
+- **`SRCS` / `HDRS`**: sources and headers; header-only libraries may omit compile-only `SRCS` (see implementation: interface vs static).
+- **`DEPS`**: CMake targets to link (`PUBLIC`/`INTERFACE` linkage follows CMake rules on the target).
+- **`PUBLIC` / `TESTONLY`**: affect IDE folder layout and visibility conventions.
+- **`DISABLE_INSTALL`**: opt out of install rules when needed.
+
+Always prefer `kosy::` alias targets created by the helper (`kosy::<name>`).
+
+## 4. `kosy_cxx_module`
+
+For C++20/23 modules:
+
+```cmake
+kosy_cxx_module(
+  NAME mymodule
+  IXXS mymodule.ixx
+  SRCS module_impl.cpp
+  DEPS kosy::core
+)
+```
+
+- Keep module interface files (`IXXS`) cohesive; split partitions when the standard and compiler allow.
+
+## 5. `kosy_cxx_test`
+
+Wraps test executables:
+
+```cmake
+kosy_cxx_test(
+  NAME mylib_test
+  SRCS mylib_test.cpp
+  DEPS kosy::mylib
+)
+```
+
+- Requires **`BUILD_TESTING`** and **`KOSY_BUILD_TESTING`** at configure time or the function returns early.
+- Default links include **doctest**, **cxxopts**, and **Matplot++**—pass additional `DEPS` as needed.
+
+## 6. Testing and CTest
+
+- Enable with `-DBUILD_TESTING=ON -DKOSY_BUILD_TESTING=ON` when running tests.
+- Prefer `ctest` or `cmake --build ... --target` over manual invocations of binaries in scripts.
+
+## 7. Style
+
+- Use lowercase `snake_case` for local CMake variables; prefix cache variables that are project-global with `KOSY_` when they are Kosy-specific.
+- Prefer `target_*` commands over directory-wide commands when scoping compile flags or definitions.
