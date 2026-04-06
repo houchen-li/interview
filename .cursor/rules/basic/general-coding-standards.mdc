@@ -1,0 +1,33 @@
+---
+globs: *.cc,*.h,*.cpp,*.hpp,*.cxx,*.py
+description: "General code structure, naming, constants, and comments for Kosy C++ and Python sources."
+---
+# General Coding Standards
+
+## 1. Code Structure
+
+- **Single responsibility**: each file and type should have a clear purpose; avoid “kitchen sink” headers.
+- **Minimize coupling**: prefer small interfaces and explicit dependencies over hidden globals.
+- **Match existing layout**: place new code beside related modules under `src/` and `tests/` (or established Python paths).
+
+## 2. Naming
+
+- **C++**: follow [cpp/cpp-coding-standards.mdc](mdc:.cursor/rules/cpp/cpp-coding-standards.mdc) (camelCase for functions, `m_` for private members, etc.).
+- **Python**: `snake_case` functions and variables, `PascalCase` classes, `UPPER_SNAKE_CASE` module-level constants per PEP 8 and project ruff config.
+
+## 3. Constants
+
+- Prefer `constexpr` or `const` in C++ for compile-time values; avoid macros unless required for interop or codegen.
+- In Python, module-level constants use `UPPER_SNAKE_CASE`; avoid mutable shared globals.
+
+## 4. Comments
+
+- **Language**: English only for comments and user-facing diagnostic messages in code.
+- **Content**: explain **why** non-obvious decisions were made, invariants, and preconditions—not a narration of what each line does.
+- Remove stale comments when behavior changes.
+
+## 5. Anti-patterns
+
+- No dead code left behind “for later.”
+- No commented-out blocks committed without a short rationale (prefer deletion and version control).
+- No secrets in source (see [basic/security.mdc](mdc:.cursor/rules/basic/security.mdc)).

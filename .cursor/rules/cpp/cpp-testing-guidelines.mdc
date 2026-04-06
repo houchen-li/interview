@@ -1,0 +1,52 @@
+---
+globs: "*_test.cpp"
+description: "doctest patterns and conventions for Kosy C++ tests."
+---
+# C++ Testing Guidelines (doctest)
+
+## 1. Framework
+
+- All C++ tests use **doctest** (linked by `kosy_cxx_test` in `cmake/utils.cmake`).
+- Test sources are typically named `*_test.cpp` and registered through CMake.
+
+## 2. Structure
+
+- Use `TEST_CASE` for grouped tests; nest `SUBCASE` for scenario variations when it improves readability.
+- Keep tests **independent**: no order assumptions, no shared mutable global state.
+- Follow **Arrange / Act / Assert** in spirit even if not spelled out in comments.
+
+## 3. Assertions
+
+- Prefer doctest matchers that give good diagnostics (`CHECK`, `REQUIRE`, `CHECK_EQ`, etc.).
+- Use `REQUIRE` when later checks would be undefined if the condition fails.
+
+```cpp
+#include <doctest/doctest.h>
+
+int factorial(int n);
+
+TEST_CASE("factorial") {
+  CHECK_EQ(factorial(0), 1);
+  CHECK_EQ(factorial(5), 120);
+  SUBCASE("negative is rejected") {
+    CHECK_THROWS_AS(factorial(-1), std::invalid_argument);
+  }
+}
+```
+
+## 4. Exceptions
+
+- Use `CHECK_THROWS_AS`, `CHECK_THROWS_WITH`, or `REQUIRE_THROWS` to assert exception types and messages when stable.
+
+## 5. Floating Point
+
+- Use doctest approximate comparisons for floats (`doctest::Approx`) or wrap tolerances in helpers to avoid flaky tests.
+
+## 6. Fixtures and Helpers
+
+- Shared setup can be free functions or small helper types in the test `.cpp` file; avoid pulling production singletons into tests unless necessary.
+
+## 7. What Not to Do
+
+- Do not rely on `main` beyond doctest’s supplied entry (project may use `DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN` or a shared test main—follow existing tests).
+- Do not leave disabled tests without a TODO or issue reference if they must stay skipped.
